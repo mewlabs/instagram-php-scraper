@@ -1,12 +1,12 @@
 {
-  "name": "raiym/instagram-php-scraper",
+  "name": "mewlabs/instagram-php-scraper",
   "description": "Instagram PHP Scraper. Get account information, photos and videos without any authorization",
   "keywords": [
     "instagram",
     "scraper"
   ],
   "type": "library",
-  "homepage": "https://github.com/raiym/instagram-php-scraper",
+  "homepage": "https://github.com/mewlabs/instagram-php-scraper",
   "license": "MIT",
   "authors": [
     {
@@ -16,7 +16,7 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "mashape/unirest-php": "3.0.*",
+    "mewlabs/unirest-php": "3.0.*",
     "phpFastCache/phpFastCache": "5.0.*"
   },
   "require-dev": {

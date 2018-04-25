@@ -972,6 +972,68 @@ class Instagram
     }
 
     /**
+     * @param string $tag
+     * @param string $maxId
+     *
+     * @return array
+     * @throws InstagramException
+     */
+    public function getPaginateMediasByLocationId($facebookLocationId, $maxId = '')
+    {
+        $hasNextPage = true;
+        $medias = [];
+
+        $toReturn = [
+            'medias' => $medias,
+            'maxId' => $maxId,
+            'hasNextPage' => $hasNextPage,
+        ];
+
+        $response = Request::get(Endpoints::getMediasJsonByLocationIdLink($facebookLocationId, $maxId),
+            $this->generateHeaders($this->userSession));
+
+        if ($response->code !== 200) {
+            throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.');
+        }
+
+        $cookies = static::parseCookies($response->headers['Set-Cookie']);
+        $this->userSession['csrftoken'] = $cookies['csrftoken'];
+
+        $arr = json_decode($response->raw_body, true, 512, JSON_BIGINT_AS_STRING);
+
+        if (!is_array($arr)) {
+            throw new InstagramException('Response decoding failed. Returned data corrupted or this library outdated. Please report issue');
+        }
+
+        if (empty($arr['graphql']['location']['edge_location_to_media']['count'])) {
+            return $toReturn;
+        }
+
+        $nodes = $arr['graphql']['location']['edge_location_to_media']['edges'];
+
+        if (empty($nodes)) {
+            return $toReturn;
+        }
+
+        foreach ($nodes as $mediaArray) {
+            $medias[] = Media::create($mediaArray['node']);
+        }
+
+        $maxId = $arr['graphql']['location']['edge_location_to_media']['page_info']['end_cursor'];
+        $hasNextPage = $arr['graphql']['location']['edge_location_to_media']['page_info']['has_next_page'];
+        $count = $arr['graphql']['location']['edge_location_to_media']['count'];
+
+        $toReturn = [
+            'medias' => $medias,
+            'count' => $count,
+            'maxId' => $maxId,
+            'hasNextPage' => $hasNextPage,
+        ];
+
+        return $toReturn;
+    }
+
+    /**
      * @param string $facebookLocationId
      *
      * @return Location
