@@ -972,7 +972,7 @@ class Instagram
     }
 
     /**
-     * @param string $tag
+     * @param string $facebookLocationId
      * @param string $maxId
      *
      * @return array
