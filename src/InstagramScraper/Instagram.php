@@ -1005,11 +1005,13 @@ class Instagram
             throw new InstagramException('Response decoding failed. Returned data corrupted or this library outdated. Please report issue');
         }
 
-        if (empty($arr['graphql']['location']['edge_location_to_media']['count'])) {
+        $key = isset($arr['graphql']) ? 'graphql' : 'data'; // first response contains 'graphql', and the rest - 'data'
+
+        if (empty($arr[$key]['location']['edge_location_to_media']['count'])) {
             return $toReturn;
         }
 
-        $nodes = $arr['graphql']['location']['edge_location_to_media']['edges'];
+        $nodes = $arr[$key]['location']['edge_location_to_media']['edges'];
 
         if (empty($nodes)) {
             return $toReturn;
@@ -1019,9 +1021,9 @@ class Instagram
             $medias[] = Media::create($mediaArray['node']);
         }
 
-        $maxId = $arr['graphql']['location']['edge_location_to_media']['page_info']['end_cursor'];
-        $hasNextPage = $arr['graphql']['location']['edge_location_to_media']['page_info']['has_next_page'];
-        $count = $arr['graphql']['location']['edge_location_to_media']['count'];
+        $maxId = $arr[$key]['location']['edge_location_to_media']['page_info']['end_cursor'];
+        $hasNextPage = $arr[$key]['location']['edge_location_to_media']['page_info']['has_next_page'];
+        $count = $arr[$key]['location']['edge_location_to_media']['count'];
 
         $toReturn = [
             'medias' => $medias,
