@@ -12,6 +12,10 @@ class Endpoints
     const ACCOUNT_JSON_INFO = 'https://www.instagram.com/{username}/?__a=1';
     const MEDIA_JSON_INFO = 'https://www.instagram.com/p/{code}/?__a=1';
     const MEDIA_JSON_BY_LOCATION_ID = 'https://www.instagram.com/explore/locations/{{facebookLocationId}}/?__a=1&max_id={{maxId}}';
+
+    const MEDIA_JSON_BY_LOCATION_ID_FIRST = 'https://www.instagram.com/explore/locations/{{facebookLocationId}}/?__a=1';
+    const MEDIA_JSON_BY_LOCATION_ID_NEXT = 'https://www.instagram.com/graphql/query/?query_hash=ac38b90f0f3981c42092016a37c59bf7&variables=';
+
     const MEDIA_JSON_BY_TAG = 'https://www.instagram.com/explore/tags/{tag}/?__a=1&max_id={max_id}';
     const GENERAL_SEARCH = 'https://www.instagram.com/web/search/topsearch/?query={query}';
     const ACCOUNT_JSON_INFO_BY_ID = 'ig_user({userId}){id,username,external_url,full_name,profile_pic_url,biography,followed_by{count},follows{count},media{count},is_private,is_verified}';
@@ -87,8 +91,18 @@ class Endpoints
 
     public static function getMediasJsonByLocationIdLink($facebookLocationId, $maxId = '')
     {
-        $url = str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID);
-        return str_replace('{{maxId}}', urlencode($maxId), $url);
+        if ($maxId) {
+            $variables = [
+                'id'    => (string)$facebookLocationId,
+                'first' => 12,
+                'after' => (string)$maxId,
+            ];
+            $url = static::MEDIA_JSON_BY_LOCATION_ID_NEXT . urlencode(json_encode($variables));
+        } else {
+            $url = str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID_FIRST);
+        }
+
+        return $url;
     }
 
     public static function getMediasJsonByTagLink($tag, $maxId = '')
