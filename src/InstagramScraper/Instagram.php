@@ -308,6 +308,44 @@ class Instagram
     }
 
     /**
+     * @param $id
+     * @return Account
+     * @throws \Exception
+     * @throws InstagramException
+     * @throws InstagramNotFoundException
+     */
+    public function getAccountInfoById($id)
+    {
+        $response = Request::get(
+            Endpoints::getAccountJsonPrivateInfoLinkByAccountId($id),
+            $this->generateHeaders($this->userSession)
+        );
+
+        if (static::HTTP_NOT_FOUND === $response->code) {
+            throw new InstagramNotFoundException('Account with given username does not exist.');
+        }
+
+        if (static::HTTP_OK !== $response->code) {
+            throw new InstagramException(
+                'Response code is ' . $response->code . '. Body: ' .
+                    static::getErrorBody($response->body) . ' Something went wrong. Please report issue.'
+            );
+        }
+
+        if (!($responseArray = json_decode($response->raw_body, true))) {
+            throw new InstagramException('Response does not JSON');
+        }
+
+        if ($responseArray['status'] !== 'ok') {
+            throw new InstagramException(
+                (isset($responseArray['message']) ? $responseArray['message'] : 'Unknown Error')
+            );
+        }
+
+        return Account::create($responseArray['user']);
+    }
+
+    /**
      * @return null
      * @throws InstagramException
      */
