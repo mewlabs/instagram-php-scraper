@@ -16,7 +16,7 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "mewlabs/unirest-php": "3.0.*",
+    "mewlabs/unirest-php": "dev-master",
     "phpFastCache/phpFastCache": "5.0.*"
   },
   "require-dev": {
