@@ -86,6 +86,12 @@ class Account extends AbstractModel
     protected $isLoaded = false;
 
     /**
+     * null if unknown, true/false if known
+     * @var null|boolean
+     */
+    protected $isBusiness = null;
+
+    /**
      * @return bool
      */
     public function isLoaded()
@@ -200,6 +206,14 @@ class Account extends AbstractModel
     }
 
     /**
+     * @return bool|null
+     */
+    public function isBusiness()
+    {
+        return $this->isBusiness;
+    }
+
+    /**
      * @param $value
      * @param $prop
      * @param $array
@@ -220,15 +234,21 @@ class Account extends AbstractModel
             case 'profile_pic_url':
                 $this->profilePicUrl = $value;
                 break;
+
             case 'profile_pic_url_hd':
                 $this->profilePicUrlHd = $value;
                 break;
+            case 'hd_profile_pic_url_info':
+                $this->profilePicUrlHd = !empty($array[$prop]['url']) ? $array[$prop]['url'] : '';
+                break;
+
             case 'biography':
                 $this->biography = $value;
                 break;
             case 'external_url':
                 $this->externalUrl = $value;
                 break;
+
             case 'edge_follow':
                 $this->followsCount = !empty($array[$prop]['count']) ? (int)$array[$prop]['count'] : 0;
                 break;
@@ -238,11 +258,25 @@ class Account extends AbstractModel
             case 'edge_owner_to_timeline_media':
                 $this->mediaCount = !empty($array[$prop]['count']) ? $array[$prop]['count'] : 0;
                 break;
+
+            case 'following_count':
+                $this->followsCount = $value;
+                break;
+            case 'follower_count':
+                $this->followedByCount = $value;
+                break;
+            case 'media_count':
+                $this->mediaCount = $value;
+                break;
+
             case 'is_private':
                 $this->isPrivate = (bool)$value;
                 break;
             case 'is_verified':
                 $this->isVerified = (bool)$value;
+                break;
+            case 'is_business':
+                $this->isBusiness = (bool)$value;
                 break;
         }
     }
