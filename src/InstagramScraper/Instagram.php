@@ -38,7 +38,7 @@ class Instagram
     private $sessionPassword;
     private $userSession;
     private $rhxGis = null;
-    private $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36';
+    private $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
 
     /**
      * @param string $username
@@ -1159,6 +1159,75 @@ class Instagram
             }
         }
         return $accounts;
+    }
+
+    /**
+     * @param string $accountId
+     * @param bool   $isGetFollowers
+     * @param int    $pageSize
+     * @param string $endCursor
+     * @param bool   $delayed
+     * @return array
+     * @throws InstagramException
+     */
+    public function getPaginatedRelationships($accountId, $isGetFollowers = true, $pageSize = 24, $endCursor = '', $delayed = true)
+    {
+        if ($delayed) {
+            set_time_limit($this->pagingTimeLimitSec);
+        }
+
+        if ($isGetFollowers) {
+            $method = 'getFollowersJsonLink';
+            $edgeKey = 'edge_followed_by';
+        } else {
+            $method = 'getFollowingJsonLink';
+            $edgeKey = 'edge_follow';
+        }
+
+        $accounts = [];
+        $toReturn = [
+            'accounts' => $accounts,
+            'maxId' => '',
+            'hasNextPage' => false,
+        ];
+
+        $response = Request::get(Endpoints::$method($accountId, $pageSize, $endCursor),
+            $this->generateHeaders($this->userSession));
+        if ($response->code !== 200) {
+            throw new InstagramException('Response code is ' . $response->code . '. Body: ' .
+                static::getErrorBody($response->body) . ' Something went wrong. Please report issue.');
+        }
+
+        $jsonResponse = json_decode($response->raw_body, true, 512, JSON_BIGINT_AS_STRING);
+
+        if ($jsonResponse['data']['user'][$edgeKey]['count'] === 0) {
+            return $toReturn;
+        }
+
+        $edgesArray = $jsonResponse['data']['user'][$edgeKey]['edges'];
+        if (count($edgesArray) === 0) {
+            throw new InstagramException('Failed to get relationships of account id ' . $accountId .
+                '. The account is private.');
+        }
+
+        foreach ($edgesArray as $edge) {
+            $accounts[] = $edge['node'];
+        }
+        $toReturn['accounts'] = $accounts;
+
+        $pageInfo = $jsonResponse['data']['user'][$edgeKey]['page_info'];
+        if ($pageInfo['has_next_page']) {
+            $toReturn['hasNextPage'] = true;
+            $toReturn['maxId'] = $pageInfo['end_cursor'];
+        }
+
+        if ($delayed) {
+            // Random wait between 1 and 3 sec to mimic browser
+            $microsec = rand($this->pagingDelayMinimumMicrosec, $this->pagingDelayMaximumMicrosec);
+            usleep($microsec);
+        }
+
+        return $toReturn;
     }
 
     /**
