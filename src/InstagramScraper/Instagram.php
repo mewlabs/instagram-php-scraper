@@ -41,7 +41,7 @@ class Instagram
     private $sessionPassword;
     private $userSession;
     private $rhxGis = null;
-    private $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
+    private $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36';
 
     /**
      * @param string $username
@@ -53,6 +53,7 @@ class Instagram
      */
     public static function withCredentials($username, $password, $sessionFolder = null)
     {
+        //$sessionFolder = static::$instanceCache ?: $sessionFolder;
         if (is_null($sessionFolder)) {
             $sessionFolder = __DIR__ . DIRECTORY_SEPARATOR . 'sessions' . DIRECTORY_SEPARATOR;
         }
