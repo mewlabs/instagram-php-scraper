@@ -370,6 +370,14 @@ class Account extends AbstractModel
     /**
      * @return bool
      */
+    public function isBusiness()
+    {
+        return $this->isBusinessAccount;
+    }
+
+    /**
+     * @return bool
+     */
     public function isBusinessAccount()
     {
         return $this->isBusinessAccount;

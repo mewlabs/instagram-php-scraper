@@ -1098,8 +1098,7 @@ class Instagram
             throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.');
         }
 
-        $cookies = static::parseCookies($response->headers['Set-Cookie']);
-        $this->userSession['csrftoken'] = $cookies['csrftoken'];
+        $this->parseCookies($response->headers);
 
         $arr = json_decode($response->raw_body, true, 512, JSON_BIGINT_AS_STRING);
 
