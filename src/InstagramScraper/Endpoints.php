@@ -95,18 +95,19 @@ class Endpoints
 
     public static function getMediasJsonByLocationIdLink($facebookLocationId, $maxId = '')
     {
-        if ($maxId) {
-            $variables = [
-                'id'    => (string)$facebookLocationId,
-                'first' => 12,
-                'after' => (string)$maxId,
-            ];
-            $url = static::MEDIA_JSON_BY_LOCATION_ID_NEXT . urlencode(json_encode($variables));
-        } else {
-            $url = str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID_FIRST);
-        }
+//        if ($maxId) {
+//            $variables = [
+//                'id'    => (string)$facebookLocationId,
+//                'first' => 12,
+//                'after' => (string)$maxId,
+//            ];
+//            $url = static::MEDIA_JSON_BY_LOCATION_ID_NEXT . urlencode(json_encode($variables));
+//        } else {
+//            $url = str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID_FIRST);
+//        }
 
-        return $url;
+        return str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID_FIRST)
+            . ($maxId ? ('&max_id=' . $maxId) : '');
     }
 
     public static function getMediasJsonByTagLink($tag, $maxId = '')
