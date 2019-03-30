@@ -558,6 +558,7 @@ class Media extends AbstractModel
                 $this->link = Endpoints::getMediaPageLink($this->shortCode);
                 break;
             case 'edge_media_to_comment':
+            case 'edge_media_to_parent_comment':
                 if (isset($arr[$prop]['count'])) {
                     $this->commentsCount = (int) $arr[$prop]['count'];
                 }
