@@ -698,21 +698,24 @@ class Instagram
             }
             $this->parseCookies($response->headers);
             $jsonResponse = $this->decodeRawBodyToJson($response->raw_body);
-            $nodes = $jsonResponse['data']['shortcode_media']['edge_media_to_comment']['edges'];
+            $edge = isset($jsonResponse['data']['shortcode_media']['edge_media_to_comment'])
+                ? $jsonResponse['data']['shortcode_media']['edge_media_to_comment']
+                : $jsonResponse['data']['shortcode_media']['edge_media_to_parent_comment'];
+            $nodes = $edge['edges'];
             foreach ($nodes as $commentArray) {
                 $comments[] = Comment::create($commentArray['node']);
                 $index++;
             }
-            $hasPrevious = $jsonResponse['data']['shortcode_media']['edge_media_to_comment']['page_info']['has_next_page'];
+            $hasPrevious = $edge['page_info']['has_next_page'];
 
-            $numberOfComments = $jsonResponse['data']['shortcode_media']['edge_media_to_comment']['count'];
+            $numberOfComments = $edge['count'];
             if ($count > $numberOfComments) {
                 $count = $numberOfComments;
             }
-            if (sizeof($nodes) == 0) {
+            if (!$nodes) {
                 return $comments;
             }
-            $maxId = $jsonResponse['data']['shortcode_media']['edge_media_to_comment']['page_info']['end_cursor'];
+            $maxId = $edge['page_info']['end_cursor'];
         }
         return $comments;
     }
