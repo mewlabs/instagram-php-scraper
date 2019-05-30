@@ -38,6 +38,8 @@ class Endpoints
 
     const ACCOUNT_MEDIAS2 = 'https://www.instagram.com/graphql/query/?query_id=17880160963012870&id={{accountId}}&first=10&after=';
 
+    const ACCOUNT_TAGGED_MEDIA = 'https://www.instagram.com/graphql/query/?query_hash=ff260833edf142911047af6024eb634a&variables={variables}';
+
     // Look alike??
     const URL_SIMILAR = 'https://www.instagram.com/graphql/query/?query_id=17845312237175864&id=4663052';
 
@@ -108,6 +110,20 @@ class Endpoints
 
         return str_replace('{{facebookLocationId}}', urlencode($facebookLocationId), static::MEDIA_JSON_BY_LOCATION_ID_FIRST)
             . ($maxId ? ('&max_id=' . $maxId) : '');
+    }
+
+    public static function getAccountTaggedMediaLink($uid, $after = '', $count = 12)
+    {
+        $variables = [
+            'id'    => $uid,
+            'first' => $count,
+        ];
+
+        if ($after) {
+            $variables['after'] = $after;
+        }
+
+        return str_replace('{variables}', urlencode(json_encode($variables)), static::ACCOUNT_TAGGED_MEDIA);
     }
 
     public static function getMediasJsonByTagLink($tag, $maxId = '')

@@ -1077,6 +1077,61 @@ class Instagram
     }
 
     /**
+     * @param integer $uid
+     * @param string  $after
+     * @param integer $count
+     *
+     * @return array
+     * @throws InstagramException
+     */
+    public function getTaggedMedias($uid, $after = '', $count = 12)
+    {
+        $medias = [];
+
+        $toReturn = [
+            'medias' => $medias,
+            'maxId' => $after,
+            'hasNextPage' => true,
+        ];
+
+        $response = Request::get(Endpoints::getAccountTaggedMediaLink($uid, $after, $count),
+            $this->generateHeaders($this->userSession));
+
+        if ($response->code !== 200) {
+            throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.');
+        }
+
+        $this->parseCookies($response->headers);
+
+        $arr = json_decode($response->raw_body, true, 512, JSON_BIGINT_AS_STRING);
+
+        if (!is_array($arr)) {
+            throw new InstagramException('Response decoding failed. Returned data corrupted or this library outdated. Please report issue');
+        }
+
+        if (empty($nodes = $arr['data']['user']['edge_user_to_photos_of_you']['edges'])) {
+            return $toReturn;
+        }
+
+        foreach ($nodes as $mediaArray) {
+            $medias[] = Media::create($mediaArray['node']);
+        }
+
+        $after       = $arr['data']['user']['edge_user_to_photos_of_you']['page_info']['end_cursor'];
+        $hasNextPage = $arr['data']['user']['edge_user_to_photos_of_you']['page_info']['has_next_page'];
+        $count       = $arr['data']['user']['edge_user_to_photos_of_you']['count'];
+
+        $toReturn = [
+            'medias'      => $medias,
+            'count'       => $count,
+            'maxId'       => $after,
+            'hasNextPage' => $hasNextPage,
+        ];
+
+        return $toReturn;
+    }
+
+    /**
      * @param string $facebookLocationId
      * @param string $maxId
      *
