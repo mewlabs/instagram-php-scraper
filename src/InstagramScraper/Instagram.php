@@ -453,7 +453,7 @@ class Instagram
                 $sharedData = $this->getSharedDataFromPage();
                 $this->rhxGis = $sharedData['rhx_gis'];
             } catch (\Exception $exception) {
-                throw new InstagramException('Could not extract gis from page');
+                //throw new InstagramException('Could not extract gis from page');
             }
         }
 
