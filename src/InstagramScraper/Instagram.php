@@ -313,6 +313,7 @@ class Instagram
      * @return Account
      * @throws InstagramException
      * @throws InstagramNotFoundException
+     * @throws InstagramAuthException
      */
     public function getAccount($username)
     {
@@ -326,6 +327,10 @@ class Instagram
         }
 
         $userArray = self::extractSharedDataFromBody($response->raw_body);
+
+        if (isset($userArray['entry_data']['LoginAndSignupPage'])) {
+            throw new InstagramAuthException('Authorization required');
+        }
 
         if (!isset($userArray['entry_data']['ProfilePage'][0]['graphql']['user'])) {
             throw new InstagramNotFoundException('Account with this username does not exist');
