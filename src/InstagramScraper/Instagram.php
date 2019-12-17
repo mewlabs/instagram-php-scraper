@@ -1595,7 +1595,7 @@ class Instagram
             }
             $cookies = $this->parseCookies($response->headers);
 
-            $mid = $cookies['mid'];
+            $mid = isset($cookies['mid']) ? $cookies['mid'] : '""';
             $headers = [
                 'cookie' => "ig_cb=1; csrftoken=$csrfToken; mid=$mid;",
                 'referer' => Endpoints::BASE_URL . '/',
