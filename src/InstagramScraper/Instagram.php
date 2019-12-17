@@ -1478,6 +1478,94 @@ class Instagram
     }
 
     /**
+     * @param string $tag - array of instagram tag
+     * @return array
+     * @throws InstagramException
+     */
+    public function getStoriesByTag($tag)
+    {
+        $response = Request::get(
+            Endpoints::getStoriesByTagLink($tag),
+            $this->generateHeaders($this->userSession)
+        );
+
+        if ($response->code !== static::HTTP_OK) {
+            throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.', $response->code);
+        }
+
+        $jsonResponse = $this->decodeRawBodyToJson($response->raw_body);
+
+        if (empty($jsonResponse['data']['reels_media'][0]['items'])) {
+            return [];
+        }
+
+        $stories = [];
+
+        foreach ($jsonResponse['data']['reels_media'][0]['items'] as $item) {
+            $UserStories = UserStories::create();
+            $UserStories->setOwner(Account::create($item['owner']));
+
+            $UserStories->addStory(Story::create($item));
+
+            $stories[] = $UserStories;
+        }
+
+        return $stories;
+    }
+
+    /**
+     * @param array $stories
+     * @param string $tag
+     * @return bool
+     * @throws InstagramException
+     */
+    public function markStoriesSeen($stories, $tag)
+    {
+        foreach ($stories as $story) {
+            sleep(rand(1, 2));
+            $result = $this->setStoriesSeen($story, $tag);
+            if (!$result) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $userStory
+     * @param $tag
+     * @return bool
+     * @throws InstagramException
+     */
+    public function setStoriesSeen($userStory, $tag)
+    {
+        $response = Request::post(
+            Endpoints::STORIES_SEEN,
+            $this->generateHeaders($this->userSession),
+            [
+                'reelMediaId'      => ($userStory->getStories()[0])->getId(),
+                'reelMediaOwnerId' => $userStory->getOwner()->getId(),
+                'reelId'           => "tag:{$tag}",
+                'reelMediaTakenAt' => time() - rand(5, 10),
+                'viewSeenAt:'      => time(),
+            ]
+        );
+
+        if ($response->code !== static::HTTP_OK) {
+            throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.', $response->code);
+        }
+
+        $jsonResponse = $this->decodeRawBodyToJson($response->raw_body);
+
+        if (isset($jsonResponse['status']) && $jsonResponse['status'] === 'ok') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param bool $force
      * @param bool $support_two_step_verification
      *

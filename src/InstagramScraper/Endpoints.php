@@ -45,6 +45,9 @@ class Endpoints
 
     const GRAPH_QL_QUERY_URL = 'https://www.instagram.com/graphql/query/?query_id={{queryId}}';
 
+    const STORIES_BY_TAG = 'https://www.instagram.com/graphql/query/?query_hash=52a36e788a02a3c612742ed5146f1676&variables={variables}';
+    const STORIES_SEEN = 'https://www.instagram.com/stories/reel/seen';
+
     private static $requestMediaCount = 30;
 
     /**
@@ -213,7 +216,7 @@ class Endpoints
         return $url;
     }
 
-    public static function getLikeUrl($mediaId) 
+    public static function getLikeUrl($mediaId)
     {
         return str_replace('{mediaId}', urlencode($mediaId), static::LIKE_URL);
     }
@@ -233,5 +236,22 @@ class Endpoints
         $url = str_replace('{mediaId}', $mediaId, static::DELETE_COMMENT_URL);
         $url = str_replace('{commentId}', $commentId, $url);
         return $url;
+    }
+
+    public static function getStoriesByTagLink($tag)
+    {
+        $variables = [
+        'reel_ids'                        => [],
+            'tag_names'                   => [$tag],
+            'location_ids'                => [],
+            'highlight_reel_ids'          => [],
+            'precomposed_overlay'         => false,
+            'show_story_viewer_list'      => true,
+            'story_viewer_fetch_count'    => 50,
+            'story_viewer_cursor'         => '',
+            'stories_video_dash_manifest' => false,
+        ];
+
+        return str_replace('{variables}', urlencode(json_encode($variables)), static::STORIES_BY_TAG);
     }
 }
