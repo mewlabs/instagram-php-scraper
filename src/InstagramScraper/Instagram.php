@@ -1618,7 +1618,7 @@ class Instagram
 
             if (is_object($response->body)) {
                 if (!$response->body->authenticated) {
-                    throw new InstagramAuthException('User credentials are wrong.');
+                    throw new InstagramAuthException('User credentials are wrong. Response "body": ' . json_encode($response->body));
                 }
             }
 
