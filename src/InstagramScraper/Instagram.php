@@ -1540,11 +1540,12 @@ class Instagram
      */
     public function setStoriesSeen($userStory, $tag)
     {
+        $story = $userStory->getStories()[0];
         $response = Request::post(
             Endpoints::STORIES_SEEN,
             $this->generateHeaders($this->userSession),
             [
-                'reelMediaId'      => ($userStory->getStories()[0])->getId(),
+                'reelMediaId'      => $story->getId(),
                 'reelMediaOwnerId' => $userStory->getOwner()->getId(),
                 'reelId'           => "tag:{$tag}",
                 'reelMediaTakenAt' => time() - rand(5, 10),
