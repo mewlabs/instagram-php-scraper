@@ -121,7 +121,7 @@ class Media extends AbstractModel
     protected $likesCount = 0;
 
     /**
-     * @var
+     * @var string
      */
     protected $locationId;
 
@@ -374,6 +374,18 @@ class Media extends AbstractModel
     public function getLocationId()
     {
         return $this->locationId;
+    }
+
+
+    /**
+     * @param string $locationId
+     * @return Media
+     */
+    public function setLocationId($locationId)
+    {
+        $this->locationId = $locationId;
+
+        return $this;
     }
 
     /**
