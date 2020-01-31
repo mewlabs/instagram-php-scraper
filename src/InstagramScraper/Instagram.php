@@ -61,6 +61,7 @@ class Instagram
             CacheManager::setDefaultConfig([
                 'path' => $sessionFolder,
                 'ignoreSymfonyNotice' => true,
+                'defaultTtl' => 604800, // set cache time to 7 days (7 * 24 * 3600)
             ]);
             static::$instanceCache = CacheManager::getInstance('files');
         } else {
