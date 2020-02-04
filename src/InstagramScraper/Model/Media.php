@@ -161,6 +161,11 @@ class Media extends AbstractModel
     protected $locationSlug;
 
     /**
+     * @var Account[]|array
+     */
+    protected $taggedUser = [];
+
+    /**
      * @param string $code
      *
      * @return int
@@ -629,6 +634,17 @@ class Media extends AbstractModel
                     $this->type = static::TYPE_SIDECAR;
                 }
                 break;
+            case 'edge_media_to_tagged_user':
+                if (!is_array($arr[$prop]['edges'])) {
+                    break;
+                }
+                foreach ($arr[$prop]['edges'] as $edge) {
+                    if (!isset($edge['node'])) {
+                        continue;
+                    }
+                    $this->taggedUser[] = Account::create($edge['node']['user']);
+                }
+                break;
         }
         if (!$this->ownerId && !is_null($this->owner)) {
             $this->ownerId = $this->getOwner()->getId();
@@ -693,5 +709,13 @@ class Media extends AbstractModel
     public function getOwner()
     {
         return $this->owner;
+    }
+
+    /**
+     * @return Account[]|array
+     */
+    public function getTaggedUser()
+    {
+        return $this->taggedUser;
     }
 }
