@@ -59,9 +59,9 @@ class Instagram
         }
         if (is_string($sessionFolder)) {
             CacheManager::setDefaultConfig([
-                'path' => $sessionFolder,
+                'path'                => $sessionFolder,
                 'ignoreSymfonyNotice' => true,
-                'defaultTtl' => 4838400, // set cache time to 8 weeks (8 * 7 * 24 * 3600)
+                'defaultTtl'          => 4838400, // set cache time to 8 weeks (8 * 7 * 24 * 3600)
             ]);
             static::$instanceCache = CacheManager::getInstance('files');
         } else {
@@ -70,6 +70,7 @@ class Instagram
         $instance = new self();
         $instance->sessionUsername = $username;
         $instance->sessionPassword = $password;
+
         return $instance;
     }
 
@@ -1573,20 +1574,21 @@ class Instagram
      *
      * $support_two_step_verification true works only in cli mode - just run login in cli mode - save cookie to file and use in any mode
      *
+     * @return array
      * @throws InstagramAuthException
      * @throws InstagramException
-     *
-     * @return array
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function login($force = false, $support_two_step_verification = false)
     {
         if ($this->sessionUsername == null || $this->sessionPassword == null) {
-            throw new InstagramAuthException("User credentials not provided");
+            throw new InstagramAuthException('User credentials not provided');
         }
 
         $cachedString = static::$instanceCache->getItem($this->sessionUsername);
         $session = $cachedString->get();
         if ($force || !$this->isLoggedIn($session)) {
+            static::$instanceCache->deleteItem($this->sessionUsername);
             $response = Request::get(Endpoints::BASE_URL);
             if ($response->code !== static::HTTP_OK) {
                 throw new InstagramException('Response code is ' . $response->code . '. Body: ' . static::getErrorBody($response->body) . ' Something went wrong. Please report issue.', $response->code);
@@ -1599,11 +1601,11 @@ class Instagram
 
             $mid = isset($cookies['mid']) ? $cookies['mid'] : '""';
             $headers = [
-                'cookie' => "ig_cb=1; csrftoken=$csrfToken; mid=$mid;",
-                'referer' => Endpoints::BASE_URL . '/',
+                'cookie'      => "ig_cb=1; csrftoken=$csrfToken; mid=$mid;",
+                'referer'     => Endpoints::BASE_URL . '/',
                 'x-csrftoken' => $csrfToken,
                 'X-CSRFToken' => $csrfToken,
-                'user-agent' => $this->getUserAgent(),
+                'user-agent'  => $this->getUserAgent(),
             ];
             $response = Request::post(Endpoints::LOGIN_URL, $headers,
                 ['username' => $this->sessionUsername, 'password' => $this->sessionPassword]);
@@ -1645,25 +1647,29 @@ class Instagram
     public function isLoggedIn($session)
     {
         if (is_null($session) || !isset($session['sessionid'])) {
+
             return false;
         }
         $sessionId = $session['sessionid'];
         $csrfToken = $session['csrftoken'];
         $headers = [
-            'cookie' => "ig_cb=1; csrftoken=$csrfToken; sessionid=$sessionId;",
-            'referer' => Endpoints::BASE_URL . '/',
+            'cookie'      => "ig_cb=1; csrftoken=$csrfToken; sessionid=$sessionId;",
+            'referer'     => Endpoints::BASE_URL . '/',
             'x-csrftoken' => $csrfToken,
             'X-CSRFToken' => $csrfToken,
-            'user-agent' => $this->getUserAgent(),
+            'user-agent'  => $this->getUserAgent(),
         ];
         $response = Request::get(Endpoints::BASE_URL, $headers);
         if ($response->code !== static::HTTP_OK) {
+
             return false;
         }
         $cookies = $this->parseCookies($response->headers);
         if (!isset($cookies['ds_user_id'])) {
+
             return false;
         }
+
         return true;
     }
 
