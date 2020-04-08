@@ -334,10 +334,14 @@ class Instagram
             throw new InstagramAuthException('Authorization required');
         }
 
-        if (!isset($userArray['entry_data']['ProfilePage'][0]['graphql']['user'])) {
-            throw new InstagramNotFoundException('Account with this username does not exist');
+        $user = $userArray['entry_data']['ProfilePage'][0]['graphql']['user']
+            ?? $userArray['graphql']['user']
+            ?? null;
+
+        if (!$user) {
+            throw new InstagramNotFoundException('User data does not found', $response->code);
         }
-        return Account::create($userArray['entry_data']['ProfilePage'][0]['graphql']['user']);
+        return Account::create($user);
     }
 
     /**
@@ -380,9 +384,14 @@ class Instagram
 
     private static function extractSharedDataFromBody($body)
     {
+        if (preg_match("#<script(?:.*?)>window\.__additionalDataLoaded\('/[a-zA-Z0-9_][a-zA-Z0-9_.]*/'\s*,\s*({.+?})\);?</script>#", $body, $out)) {
+            return json_decode($out[1], true, 512, JSON_BIGINT_AS_STRING);
+        }
+
         if (preg_match_all('#\_sharedData \= (.*?)\;\<\/script\>#', $body, $out)) {
             return json_decode($out[1][0], true, 512, JSON_BIGINT_AS_STRING);
         }
+
         return null;
     }
 
